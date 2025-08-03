@@ -1,1 +1,60 @@
-<p>game-options works!</p>
+<!-- Game Options Component -->
+<h1>Opciones de Juego</h1>
+
+<!-- Players Quantity -->
+<dx-number-box
+    label="Jugadores"
+    labelMode="floating"
+    [showSpinButtons]="true"
+    [min]="1"
+    [max]="4"
+    [value]="playersQty"
+    (onValueChanged)="onPlayersQtyChange($event.value)"
+    >
+</dx-number-box>
+
+<!-- Villain -->
+<dx-select-box
+    label="Villano"
+    labelMode="floating"
+    [searchEnabled]="true"
+    [items]="villains"
+    displayExpr="text"
+    valueExpr="card_set_code"
+    (onValueChanged)="onEncounterSelected($event.value)"
+    >
+</dx-select-box>
+
+<hr>
+
+<!-- Villain Details -->
+@if(villain != null) {
+    <div style="display: flex; justify-content: space-between;">
+        <div style="width: 40%;">
+            @if(villain.villain_phases != null) {
+                <h1> {{ villain.villain_phases[0].health * playersQty }} HP</h1>
+                <img 
+                    style="width: 100%;"
+                    [src]="'https://es.marvelcdb.com'+villain.villain_phases[0].imagesrc"
+                    alt="{{ villain.villain_phases[0].name }}" />
+            }
+        </div>
+        <div style="width: 40%;">
+            @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
+                <h2> Amenaza: {{ villain.main_scheme[0].base_threat }} / {{ villain.main_scheme[0].threat * playersQty }}</h2>
+                <h3>Aumento de amenaza: {{ villain.main_scheme[0].escalation_threat }}</h3>
+                <img 
+                    style="width: 100%;"
+                    [src]="'https://es.marvelcdb.com'+villain.main_scheme[0].imagesrc"
+                    alt="{{ villain.main_scheme[0].name }}" 
+                />
+            }
+        </div>
+    </div>
+}
+
+<!-- Start Game Button -->
+<dx-button
+    (onClick)="onStartGame()" 
+    text="Comenzar Juego">
+</dx-button>

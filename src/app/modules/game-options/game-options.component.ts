@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data.service';
+import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule } from 'devextreme-angular';
+
 
 @Component({
   selector: 'app-game-options',
   standalone: true,
-  imports: [],
+  imports: [
+    DxButtonModule,
+    DxNumberBoxModule,
+    DxSelectBoxModule,
+  ],
   templateUrl: './game-options.component.html',
   styleUrl: './game-options.component.css'
 })
