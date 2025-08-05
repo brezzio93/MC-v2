@@ -30,7 +30,7 @@
 <!-- Villain Details -->
 @if(villain != null) {
     <div style="display: flex; justify-content: space-between;">
-        <div style="width: 40%;">
+        <div style="width: 45%;">
             @if(villain.villain_phases != null) {
                 <h1> {{ villain.villain_phases[0].health * playersQty }} HP</h1>
                 <img 
@@ -39,15 +39,17 @@
                     alt="{{ villain.villain_phases[0].name }}" />
             }
         </div>
-        <div style="width: 40%;">
+        <div style="width: 45%;">
             @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
-                <h2> Amenaza: {{ villain.main_scheme[0].base_threat }} / {{ villain.main_scheme[0].threat * playersQty }}</h2>
-                <h3>Aumento de amenaza: {{ villain.main_scheme[0].escalation_threat }}</h3>
-                <img 
-                    style="width: 100%;"
-                    [src]="'https://es.marvelcdb.com'+villain.main_scheme[0].imagesrc"
-                    alt="{{ villain.main_scheme[0].name }}" 
-                />
+                @for(scheme of villain.main_scheme; track scheme) {
+                    <h1> Amenaza: {{ scheme.base_threat * playersQty }} / {{ scheme.threat * playersQty }} </h1>
+                    <img 
+                        style="width: 100%;"
+                        [src]="'https://es.marvelcdb.com'+scheme.imagesrc"
+                        alt="{{ scheme.name }}" 
+                    />
+                    <h3>Aumento de amenaza: {{ scheme.escalation_threat * playersQty }}</h3>
+                }
             }
         </div>
     </div>
