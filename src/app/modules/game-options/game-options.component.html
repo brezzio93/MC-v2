@@ -42,13 +42,13 @@
         <div style="width: 45%;">
             @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
                 @for(scheme of villain.main_scheme; track scheme) {
-                    <h1> Amenaza: {{ scheme.base_threat * playersQty }} / {{ scheme.threat * playersQty }} </h1>
+                    <h1> Amenaza: {{ scheme.base_threat }} / {{ scheme.threat }} </h1>
                     <img 
                         style="width: 100%;"
-                        [src]="'https://es.marvelcdb.com'+scheme.imagesrc"
+                        [src]="scheme.imagesrc"
                         alt="{{ scheme.name }}" 
                     />
-                    <h3>Aumento de amenaza: {{ scheme.escalation_threat * playersQty }}</h3>
+                    <h3>Aumento de amenaza: {{ scheme.escalation_threat }}</h3>
                 }
             }
         </div>
