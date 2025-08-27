@@ -29,26 +29,42 @@
 
 <!-- Villain Details -->
 @if(villain != null) {
+
+    <dx-tabs
+        [items]="villain.villain_phases"
+        [selectedIndex]="villainPhase"
+        keyExpr="code"
+        (onItemClick)="setInitVillainPhase($event)"
+    >
+    @for(phase of villain.villain_phases; track phase) {
+        <dxi-item>
+            <div *dxTemplate>
+                <div id="{{phase.code}}"> {{phase.real_name}} {{phase.stage}} </div>
+            </div>
+        </dxi-item>
+    }
+    </dx-tabs>
+
     <div style="display: flex; justify-content: space-between;">
-        <div style="width: 45%;">
+        <div>
             @if(villain.villain_phases != null) {
-                <h1> {{ villain.villain_phases[0].health * playersQty }} HP</h1>
+                <h1> {{villain.currentHP}} / {{ villain.villain_phases[villainPhase].health * playersQty }} HP</h1>
                 <img 
-                    style="width: 100%;"
-                    [src]="'https://es.marvelcdb.com'+villain.villain_phases[0].imagesrc"
-                    alt="{{ villain.villain_phases[0].name }}" />
+                    style="height: 360px;"
+                    [src]="'https://es.marvelcdb.com'+villain.villain_phases[villainPhase].imagesrc"
+                    alt="{{ villain.villain_phases[villainPhase].name }}" />
             }
         </div>
-        <div style="width: 45%;">
+        <div>
             @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
                 @for(scheme of villain.main_scheme; track scheme) {
-                    <h1> Amenaza: {{ scheme.base_threat }} / {{ scheme.threat }} </h1>
+                    <h2>{{ scheme.baseThreat }} / {{ scheme.maxThreat }} Amenaza</h2>
                     <img 
-                        style="width: 100%;"
+                        style="height: 360px;"
                         [src]="scheme.imagesrc"
                         alt="{{ scheme.name }}" 
                     />
-                    <h3>Aumento de amenaza: {{ scheme.escalation_threat }}</h3>
+                    <h3>Aumento de amenaza: {{ scheme.escalationThreat }}</h3>
                 }
             }
         </div>

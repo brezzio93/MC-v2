@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data.service';
-import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule } from 'devextreme-angular';
+import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule } from 'devextreme-angular';
 
 
 @Component({
@@ -10,6 +10,7 @@ import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule } from 'devextreme
     DxButtonModule,
     DxNumberBoxModule,
     DxSelectBoxModule,
+    DxTabsModule
   ],
   templateUrl: './game-options.component.html',
   styleUrl: './game-options.component.css'
@@ -20,6 +21,7 @@ export class GameOptionsComponent implements OnInit {
   villains: any;
   villain: any;
   rawEncounterCards: any;
+  villainPhase: number = 0;
 
   constructor(
     private dataService: DataService,
@@ -48,6 +50,7 @@ export class GameOptionsComponent implements OnInit {
               encounterPacks[card.card_set_code].text = card.card_set_name;
 
               if (card.type_code == 'villain') {
+                console.log(card)
                 if (encounterPacks[card.card_set_code].villain_phases == undefined) encounterPacks[card.card_set_code].villain_phases = [];
                 encounterPacks[card.card_set_code].villain_phases.push(card)
               }
@@ -62,11 +65,12 @@ export class GameOptionsComponent implements OnInit {
 
           let mainSets: any[] = [];
           let modularSets: any[] = [];
+          let wreckingCrew: any[] = [];
           for (const key in encounterPacks) {
             const pack = encounterPacks[key];
             if (pack.main_scheme != undefined) {
               if (pack.villain_phases) {
-                pack.villain_phases.forEach((villain_phase: any) => {
+                pack.villain_phases.forEach((villain_phase: any, index: any) => {
                   villain_phase.card_text = villain_phase.text;
                   villain_phase.text = villain_phase.name + ' ' + villain_phase.stage;
                 });
@@ -74,12 +78,34 @@ export class GameOptionsComponent implements OnInit {
               mainSets.push(pack);
             }
             else {
-              if (!pack.card_set_code.includes("_nemesis"))
-                modularSets.push(pack);
+              if (
+                key == "wrecker" ||
+                key == "thunderball" ||
+                key == "piledriver" ||
+                key == "bulldozer"
+              ) {
+                wreckingCrew.push(pack);
+              }
             }
           }
 
+          // Wrecking Crew
+          mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases = [];
+          wreckingCrew.forEach((crew: any) => {
+            crew.villain_phases.forEach((phase: any, index: any) => {
+              phase.stage = (index % 2 == 0) ? "A" : "B";
+              mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases.push(phase);
+            });
+          });
+
+          // Escape the Museum
+          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[0].stage = "A1";
+          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[1].stage = "A2";
+          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[2].stage = "B1";
+          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[3].stage = "B2";
+
           this.villains = mainSets;
+
         },
         error: (error: any) => {
           console.log("Error getting encounter cards data: ", error);
@@ -92,15 +118,15 @@ export class GameOptionsComponent implements OnInit {
     if (card.imagesrc != undefined) card.imagesrc = 'https://es.marvelcdb.com' + card.imagesrc;
 
     if (card.threat != undefined) {
-      if (card.threat != undefined) card.threat = card.threat * this.playersQty;
-      else card.threat = "-";
+      if (card.threat != undefined) card.maxThreat = card.threat * this.playersQty;
+      else card.maxThreat = "-";
     }
 
-    if (card.base_threat != undefined) card.base_threat = card.base_threat * this.playersQty;
-    else card.base_threat = "-";
+    if (card.base_threat != undefined) card.baseThreat = card.base_threat * this.playersQty;
+    else card.baseThreat = "-";
 
-    if (card.escalation_threat != undefined) card.escalation_threat = card.escalation_threat * this.playersQty;
-    else card.escalation_threat = "-";
+    if (card.escalation_threat != undefined) card.escalationThreat = card.escalation_threat * this.playersQty;
+    else card.escalationThreat = "-";
 
     switch (card.card_set_code) {
       case "rhino":
@@ -345,9 +371,9 @@ export class GameOptionsComponent implements OnInit {
         else return false;
       case "black_widow_villain":
 
-        card.escalation_threat = 1 * this.playersQty; //Easy
-        // card.escalation_threat = 2 * this.playersQty;
-        // card.escalation_threat = 3 * this.playersQty;
+        card.escalationThreat = 1 * this.playersQty; //Easy
+        // card.escalationThreat = 2 * this.playersQty;
+        // card.escalationThreat = 3 * this.playersQty;
 
         if (card.code == "50067b") {
           card.imagesrc = 'https://hallofheroeslcg.com/wp-content/uploads/2025/03/50067b.jpg';
@@ -403,16 +429,51 @@ export class GameOptionsComponent implements OnInit {
 
   onPlayersQtyChange(value: number) {
     this.playersQty = value;
+    this.villain.currentHP = this.villain.villain_phases[this.villainPhase].health * this.playersQty;
+
+    //Update Threat Values
+    this.villain.main_scheme.forEach((card: any) => {
+      if (card.threat != undefined) card.maxThreat = card.threat * this.playersQty;
+      else card.maxThreat = "-";
+
+      if (card.base_threat != undefined) card.baseThreat = card.base_threat * this.playersQty;
+      else card.baseThreat = "-";
+
+      if (card.escalation_threat != undefined) card.escalationThreat = card.escalation_threat * this.playersQty;
+      else card.escalationThreat = "-";
+    })
+
     console.log("Players Quantity Changed: ", this.playersQty);
   }
 
   onEncounterSelected(value: string) {
+    this.villainPhase = 0;
     this.villain = this.villains.find((v: any) => v.card_set_code === value);
+    this.villain.currentHP = this.villain.villain_phases[0].health * this.playersQty;
+
+    //Update Threat Values
+    this.villain.main_scheme.forEach((card: any) => {
+      if (card.threat != undefined) card.maxThreat = card.threat * this.playersQty;
+      else card.maxThreat = "-";
+
+      if (card.base_threat != undefined) card.baseThreat = card.base_threat * this.playersQty;
+      else card.baseThreat = "-";
+
+      if (card.escalation_threat != undefined) card.escalationThreat = card.escalation_threat * this.playersQty;
+      else card.escalationThreat = "-";
+    })
+
     console.log(this.villain);
   }
 
   onStartGame() {
     console.log("Game Started with Players Quantity: ", this.playersQty);
     // Logic to start the game can be added here
+  }
+
+  setInitVillainPhase(index: any) {
+    console.log(index);
+    this.villainPhase = index.itemIndex;
+    this.villain.currentHP = this.villain.villain_phases[this.villainPhase].health * this.playersQty;
   }
 }
