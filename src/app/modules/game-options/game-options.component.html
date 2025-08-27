@@ -46,21 +46,21 @@
     </dx-tabs>
 
     <div style="display: flex; justify-content: space-between;">
-        <div>
+        <div style="width:30%">
             @if(villain.villain_phases != null) {
-                <h1> {{villain.currentHP}} / {{ villain.villain_phases[villainPhase].health * playersQty }} HP</h1>
+                <h3> {{villain.currentHP}} / {{ villain.villain_phases[villainPhase].health * playersQty }} HP</h3>
                 <img 
-                    style="height: 360px;"
+                    style="width: 100%;"
                     [src]="'https://es.marvelcdb.com'+villain.villain_phases[villainPhase].imagesrc"
                     alt="{{ villain.villain_phases[villainPhase].name }}" />
             }
         </div>
-        <div>
+        <div style="width: 30%;">
             @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
                 @for(scheme of villain.main_scheme; track scheme) {
-                    <h2>{{ scheme.baseThreat }} / {{ scheme.maxThreat }} Amenaza</h2>
+                    <h3>{{ scheme.baseThreat }} / {{ scheme.maxThreat }} Am.</h3>
                     <img 
-                        style="height: 360px;"
+                        style="width: 100%;"
                         [src]="scheme.imagesrc"
                         alt="{{ scheme.name }}" 
                     />
