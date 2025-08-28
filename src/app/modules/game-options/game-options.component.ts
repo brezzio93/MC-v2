@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data.service';
-import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule } from 'devextreme-angular';
+import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule, DxTagBoxModule } from 'devextreme-angular';
 
 
 @Component({
@@ -10,7 +10,8 @@ import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule } fr
     DxButtonModule,
     DxNumberBoxModule,
     DxSelectBoxModule,
-    DxTabsModule
+    DxTagBoxModule,
+    DxTabsModule,
   ],
   templateUrl: './game-options.component.html',
   styleUrl: './game-options.component.css'
@@ -22,6 +23,7 @@ export class GameOptionsComponent implements OnInit {
   villain: any;
   rawEncounterCards: any;
   villainPhase: number = 0;
+  modularSets: any;
 
   constructor(
     private dataService: DataService,
@@ -44,20 +46,28 @@ export class GameOptionsComponent implements OnInit {
           });
 
           response.forEach((card: any) => {
-            if (card.type_code == 'villain' || card.type_code == 'main_scheme') {
-              if (encounterPacks[card.card_set_code] == undefined) encounterPacks[card.card_set_code] = [];
-              encounterPacks[card.card_set_code].card_set_code = card.card_set_code;
-              encounterPacks[card.card_set_code].text = card.card_set_name;
+            if (card.pack_code == 'core') {
+              if (card.type_code == 'villain' || card.type_code == 'main_scheme' || card.type_code == 'side_scheme' || card.type_code == 'minion') {
+                if (encounterPacks[card.card_set_code] == undefined) encounterPacks[card.card_set_code] = [];
+                encounterPacks[card.card_set_code].card_set_code = card.card_set_code;
+                encounterPacks[card.card_set_code].text = card.card_set_name;
 
-              if (card.type_code == 'villain') {
-                console.log(card)
-                if (encounterPacks[card.card_set_code].villain_phases == undefined) encounterPacks[card.card_set_code].villain_phases = [];
-                encounterPacks[card.card_set_code].villain_phases.push(card)
-              }
-              if (card.type_code == 'main_scheme') {
-                if (encounterPacks[card.card_set_code].main_scheme == undefined) encounterPacks[card.card_set_code].main_scheme = [];
-                if (this.initMainSchemes(card)) encounterPacks[card.card_set_code].main_scheme.push(card)
-
+                if (card.type_code == 'villain') {
+                  if (encounterPacks[card.card_set_code].villain_phases == undefined) encounterPacks[card.card_set_code].villain_phases = [];
+                  encounterPacks[card.card_set_code].villain_phases.push(card)
+                }
+                if (card.type_code == 'main_scheme') {
+                  if (encounterPacks[card.card_set_code].main_scheme == undefined) encounterPacks[card.card_set_code].main_scheme = [];
+                  if (this.initMainSchemes(card)) encounterPacks[card.card_set_code].main_scheme.push(card)
+                }
+                if (card.type_code == 'side_scheme') {
+                  if (encounterPacks[card.card_set_code].side_scheme == undefined) encounterPacks[card.card_set_code].side_scheme = [];
+                  encounterPacks[card.card_set_code].side_scheme.push(card)
+                }
+                if (card.type_code == 'minion') {
+                  if (encounterPacks[card.card_set_code].minions == undefined) encounterPacks[card.card_set_code].minions = [];
+                  encounterPacks[card.card_set_code].minions.push(card)
+                }
               }
             }
           });
@@ -78,33 +88,31 @@ export class GameOptionsComponent implements OnInit {
               mainSets.push(pack);
             }
             else {
-              if (
-                key == "wrecker" ||
-                key == "thunderball" ||
-                key == "piledriver" ||
-                key == "bulldozer"
-              ) {
-                wreckingCrew.push(pack);
-              }
+              if (!pack.card_set_code.includes("_nemesis"))
+                modularSets.push(pack);
+
+              // if (key == "wrecker" || key == "thunderball" || key == "piledriver" || key == "bulldozer")
+              //   wreckingCrew.push(pack);
             }
           }
 
-          // Wrecking Crew
-          mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases = [];
-          wreckingCrew.forEach((crew: any) => {
-            crew.villain_phases.forEach((phase: any, index: any) => {
-              phase.stage = (index % 2 == 0) ? "A" : "B";
-              mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases.push(phase);
-            });
-          });
+          // // Wrecking Crew
+          // mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases = [];
+          // wreckingCrew.forEach((crew: any) => {
+          //   crew.villain_phases.forEach((phase: any, index: any) => {
+          //     phase.stage = (index % 2 == 0) ? "A" : "B";
+          //     mainSets.find((x: any) => x.card_set_code == 'wrecking_crew').villain_phases.push(phase);
+          //   });
+          // });
 
-          // Escape the Museum
-          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[0].stage = "A1";
-          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[1].stage = "A2";
-          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[2].stage = "B1";
-          mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[3].stage = "B2";
+          // // Escape the Museum
+          // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[0].stage = "A1";
+          // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[1].stage = "A2";
+          // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[2].stage = "B1";
+          // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[3].stage = "B2";
 
           this.villains = mainSets;
+          this.modularSets = modularSets;
 
         },
         error: (error: any) => {

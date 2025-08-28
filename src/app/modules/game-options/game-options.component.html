@@ -1,39 +1,57 @@
 <!-- Game Options Component -->
-<h1>Opciones de Juego</h1>
+<h2> Configuración de Partida </h2>
 
-<!-- Players Quantity -->
-<dx-number-box
-    label="Jugadores"
+<div style="display: flex; justify-content: space-around;">
+    <!-- Players Quantity -->
+    <dx-number-box 
+        style="width: 33%;"
+        label="Jugadores"
+        labelMode="floating"
+        [showSpinButtons]="false"
+        [min]="1"
+        [max]="4"
+        [value]="playersQty"
+        (onValueChanged)="onPlayersQtyChange($event.value)"
+        >
+    </dx-number-box>
+    
+    <!-- Villain -->
+    <dx-select-box
+        style="width: 66%;"
+        label="Villano"
+        labelMode="floating"
+        [searchEnabled]="true"
+        [items]="villains"
+        displayExpr="text"
+        valueExpr="card_set_code"
+        (onValueChanged)="onEncounterSelected($event.value)"
+        >
+    </dx-select-box>
+</div>
+<dx-tag-box
+    label="Encuentros modulares"
     labelMode="floating"
-    [showSpinButtons]="true"
-    [min]="1"
-    [max]="4"
-    [value]="playersQty"
-    (onValueChanged)="onPlayersQtyChange($event.value)"
-    >
-</dx-number-box>
-
-<!-- Villain -->
-<dx-select-box
-    label="Villano"
-    labelMode="floating"
+    [multiline]="true"
     [searchEnabled]="true"
-    [items]="villains"
-    displayExpr="text"
+    [showSelectionControls]="true"
+    applyValueMode="useButtons"
+    [dataSource]="modularSets"
     valueExpr="card_set_code"
-    (onValueChanged)="onEncounterSelected($event.value)"
+    displayExpr="text"
     >
-</dx-select-box>
+</dx-tag-box>
 
 <hr>
 
-<!-- Villain Details -->
+<!-- Villain Content -->
 @if(villain != null) {
 
+    <!-- Phase TAB -->
     <dx-tabs
         [items]="villain.villain_phases"
         [selectedIndex]="villainPhase"
         keyExpr="code"
+        [showNavButtons]="true"
         (onItemClick)="setInitVillainPhase($event)"
     >
     @for(phase of villain.villain_phases; track phase) {
@@ -45,26 +63,31 @@
     }
     </dx-tabs>
 
-    <div style="display: flex; justify-content: space-between;">
-        <div style="width:30%">
+    <!-- Details -->
+    <div style="display: flex; justify-content: space-between; background-color: darkred;">
+        <div style="width: 33%">
             @if(villain.villain_phases != null) {
-                <h3> {{villain.currentHP}} / {{ villain.villain_phases[villainPhase].health * playersQty }} HP</h3>
                 <img 
-                    style="width: 100%;"
+                    style="width: 60%; margin: 1rem; display: block;"
                     [src]="'https://es.marvelcdb.com'+villain.villain_phases[villainPhase].imagesrc"
                     alt="{{ villain.villain_phases[villainPhase].name }}" />
+                    
+                <!-- HP -->
+                <h3 style="color: white; text-align: center;"> {{villain.currentHP}} / {{ villain.villain_phases[villainPhase].health * playersQty }} HP</h3>
             }
         </div>
-        <div style="width: 30%;">
+        <div style="width: 33%;">
             @if(villain.main_scheme != null && villain.main_scheme.length > 0) {
                 @for(scheme of villain.main_scheme; track scheme) {
-                    <h3>{{ scheme.baseThreat }} / {{ scheme.maxThreat }} Am.</h3>
                     <img 
-                        style="width: 100%;"
+                        style="width: 90%; margin: 1rem 0 1rem 0; display: block;"
                         [src]="scheme.imagesrc"
                         alt="{{ scheme.name }}" 
                     />
-                    <h3>Aumento de amenaza: {{ scheme.escalationThreat }}</h3>
+                    
+                    <!-- Threat -->
+                    <h4 style="color: white; text-align: center; margin: 0.5rem 0;"> {{ scheme.baseThreat }} / {{ scheme.maxThreat }} Amenaza </h4>
+                    <h4 style="color: white; text-align: center; margin: 0.5rem 0;"> Aumento: {{ scheme.escalationThreat }} </h4>
                 }
             }
         </div>
@@ -73,6 +96,7 @@
 
 <!-- Start Game Button -->
 <dx-button
+    style="position:absolute; bottom:0; right: 2%;"
     (onClick)="onStartGame()" 
     text="Comenzar Juego">
 </dx-button>
