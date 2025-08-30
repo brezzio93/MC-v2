@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { DataService } from '../../services/data.service';
 import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule, DxTagBoxModule } from 'devextreme-angular';
 
@@ -7,6 +8,7 @@ import { DxButtonModule, DxNumberBoxModule, DxSelectBoxModule, DxTabsModule, DxT
   selector: 'app-game-options',
   standalone: true,
   imports: [
+    CommonModule,
     DxButtonModule,
     DxNumberBoxModule,
     DxSelectBoxModule,
@@ -24,22 +26,25 @@ export class GameOptionsComponent implements OnInit {
   rawEncounterCards: any;
   villainPhase: number = 0;
   modularSets: any;
+  heroes: any;
+  allies: any;
+  heroPlayers:any = [];
 
   constructor(
     private dataService: DataService,
   ) { }
 
   ngOnInit(): void {
-    this.initVillains();
+    this.initCardSets();
   }
 
-
-  initVillains() {
+  initCardSets() {
     this.dataService.getEncounterCardsData().subscribe(
       {
         next: (response: any) => {
           this.rawEncounterCards = response;
           let encounterPacks: any[] = [];
+          let heroesPacks: any[] = [];
 
           response = response.sort((a: any, b: any) => {
             return a.code.localeCompare(b.code);
@@ -69,6 +74,20 @@ export class GameOptionsComponent implements OnInit {
                   encounterPacks[card.card_set_code].minions.push(card)
                 }
               }
+
+              if (card.type_code == 'hero') {
+                if (heroesPacks[card.card_set_code] == undefined) heroesPacks[card.card_set_code] = [];
+                heroesPacks[card.card_set_code] = card;
+                heroesPacks[card.card_set_code].text = card.card_set_name;
+
+                let colors = [
+                  "linear-gradient(110deg," + card.meta?.colors[0] + " 65%, transparent 66%)",
+                  "linear-gradient(110deg," + card.meta?.colors[2] + " 67%, transparent 68%)",
+                  "linear-gradient(110deg," + card.meta?.colors[1] + " 75%, " + card.meta?.colors[1] + " 75%)",
+                ]
+                if (card.meta) heroesPacks[card.card_set_code].colors = colors[0] + "," + colors[1] + "," + colors[2];
+              }
+
             }
           });
 
@@ -76,6 +95,10 @@ export class GameOptionsComponent implements OnInit {
           let mainSets: any[] = [];
           let modularSets: any[] = [];
           let wreckingCrew: any[] = [];
+
+          let heroSets: any[] = [];
+          let allySets: any[] = [];
+
           for (const key in encounterPacks) {
             const pack = encounterPacks[key];
             if (pack.main_scheme != undefined) {
@@ -111,8 +134,25 @@ export class GameOptionsComponent implements OnInit {
           // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[2].stage = "B1";
           // mainSets.find((x: any) => x.card_set_code == 'escape_the_museum').villain_phases[3].stage = "B2";
 
+          for (const key in heroesPacks) {
+            const pack = heroesPacks[key];
+            if (pack.card_set_code) {
+              heroSets.push(pack);
+            }
+            else {
+              pack.allies.forEach((ally: any) => {
+                allySets.push(ally);
+              });
+            }
+          }
+
           this.villains = mainSets;
           this.modularSets = modularSets;
+
+          this.heroes = heroSets;
+          this.allies = allySets;
+
+          console.log(this.heroes);
 
         },
         error: (error: any) => {
@@ -452,6 +492,12 @@ export class GameOptionsComponent implements OnInit {
     })
 
     console.log("Players Quantity Changed: ", this.playersQty);
+  }
+
+  onPlayerHeroChange(value: string, index: number) {
+    this.heroPlayers[index] = this.heroes.find((v: any) => v.card_set_code === value);
+    this.heroPlayers[index].currentHP = this.heroPlayers[index].health;
+
   }
 
   onEncounterSelected(value: string) {
